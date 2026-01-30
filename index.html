@@ -1,0 +1,3511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抖音达人带货决策系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        :root {
+            --primary: #1890ff;
+            --success: #52c41a;
+            --warning: #faad14;
+            --danger: #f5222d;
+            --info: #13c2c2;
+            --dark: #1f1f1f;
+            --light: #f8f9fa;
+            --border: #e8e8e8;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1890ff 0%, #13c2c2 100%);
+            color: white;
+            padding: 30px 0;
+            border-radius: 12px 12px 0 0;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo i {
+            font-size: 2.5rem;
+        }
+        
+        .logo h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+        
+        .logo .tagline {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .version {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        /* 主内容区域 */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 25px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--dark);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+        
+        .card-title i {
+            color: var(--primary);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-col {
+            flex: 1;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1);
+        }
+        
+        .input-with-unit {
+            position: relative;
+        }
+        
+        .unit {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+        }
+        
+        .slider-container {
+            padding: 10px 0;
+        }
+        
+        .slider-value {
+            text-align: center;
+            font-weight: 600;
+            color: var(--primary);
+            margin-top: 5px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: #e8e8e8;
+            border-radius: 4px;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 8px;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 8px;
+        }
+        
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 14px 28px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            background: #40a9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(24, 144, 255, 0.2);
+        }
+        
+        .btn-calculate {
+            background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+        }
+        
+        .btn-calculate:hover {
+            background: linear-gradient(135deg, #73d13d 0%, #52c41a 100%);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background: #ff4d4f;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-group .btn {
+            flex: 1;
+        }
+        
+        /* 结果展示区域 */
+        .result-card {
+            background: linear-gradient(135deg, #1f1f1f 0%, #2d2d2d 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+        
+        .score-display {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .total-score {
+            font-size: 5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffd666 0%, #faad14 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+        
+        .score-label {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+        
+        .decision-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1.3rem;
+            margin: 15px 0;
+        }
+        
+        .badge-s {
+            background: linear-gradient(135deg, #52c41a 0%, #a0d911 100%);
+        }
+        
+        .badge-a {
+            background: linear-gradient(135deg, #1890ff 0%, #13c2c2 100%);
+        }
+        
+        .badge-b {
+            background: linear-gradient(135deg, #faad14 0%, #ffd666 100%);
+        }
+        
+        .badge-c {
+            background: linear-gradient(135deg, #ff7a45 0%, #ffa940 100%);
+        }
+        
+        .badge-d {
+            background: linear-gradient(135deg, #f5222d 0%, #ff4d4f 100%);
+        }
+        
+        .action-suggestion {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .profit-estimate {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        .profit-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .profit-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #52c41a;
+            margin: 5px 0;
+        }
+        
+        .profit-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        /* 图表容器 */
+        .chart-container {
+            height: 300px;
+            margin: 20px 0;
+        }
+        
+        .risk-warnings {
+            margin-top: 30px;
+        }
+        
+        .warning-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 15px;
+            background: rgba(245, 34, 45, 0.1);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--danger);
+        }
+        
+        .warning-item.success {
+            background: rgba(82, 196, 26, 0.1);
+            border-left: 4px solid var(--success);
+        }
+        
+        .warning-icon {
+            color: var(--danger);
+            font-size: 1.2rem;
+            margin-top: 2px;
+        }
+        
+        .warning-item.success .warning-icon {
+            color: var(--success);
+        }
+        
+        /* 模块得分 */
+        .module-scores {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        .module-score-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .module-name {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .module-score {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        /* 历史记录表格 */
+        .history-table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .history-table th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .history-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        
+        .history-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .history-table .action-cell {
+            white-space: nowrap;
+        }
+        
+        .history-table .score-cell {
+            font-weight: 600;
+        }
+        
+        .history-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .history-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .history-btn.view {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .history-btn.delete {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .history-btn.export {
+            background: var(--success);
+            color: white;
+        }
+        
+        .history-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .history-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .history-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .stat-s {
+            color: #52c41a;
+        }
+        
+        .stat-a {
+            color: #1890ff;
+        }
+        
+        .stat-b {
+            color: #faad14;
+        }
+        
+        .stat-c {
+            color: #ff7a45;
+        }
+        
+        .stat-d {
+            color: #f5222d;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 50px;
+            color: #999;
+        }
+        
+        .no-data i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+        
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            text-align: right;
+        }
+        
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .profit-estimate, .module-scores, .history-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .form-row, .profit-estimate, .module-scores, .history-stats, .history-filters {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .total-score {
+                font-size: 4rem;
+            }
+            
+            .history-actions {
+                flex-direction: column;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+        
+        /* 标签切换 */
+        .tab-container {
+            margin-bottom: 25px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 25px;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .tab.active {
+            color: var(--primary);
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .required::after {
+            content: ' *';
+            color: var(--danger);
+        }
+        
+        /* 导入相关样式 */
+        .import-section {
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        #importPreviewTable th, #importPreviewTable td {
+            padding: 10px;
+            font-size: 0.9rem;
+        }
+        
+        #importPreviewTable .preview-action {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .preview-btn {
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: var(--primary);
+            color: white;
+        }
+        
+        .preview-btn:hover {
+            opacity: 0.9;
+        }
+        
+        #importResults .result-card {
+            background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
+        }
+        
+        #importDataBtn {
+            background: linear-gradient(135deg, #1890ff 0%, #36cfc9 100%);
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: monospace;
+            resize: vertical;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1);
+        }
+        
+        .form-hint {
+            margin-top: 8px;
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-chart-line"></i>
+                    <div>
+                        <h1>抖音达人带货决策系统</h1>
+                        <div class="tagline">数据驱动选品 · 科学量化决策 · 利润精准预测</div>
+                    </div>
+                </div>
+                <div class="version">专业版 v2.0</div>
+            </div>
+        </header>
+        
+        <div class="tab-container">
+            <div class="tabs">
+                <button class="tab active" data-tab="input">数据录入</button>
+                <button class="tab" data-tab="result">决策分析</button>
+                <button class="tab" data-tab="history">历史记录</button>
+                <!-- 添加导入标签 -->
+                <button class="tab" data-tab="import">数据导入</button>
+            </div>
+            
+            <!-- 数据录入标签 -->
+            <div id="input" class="tab-content active">
+                <div class="main-content">
+                    <!-- 左侧表单 -->
+                    <div>
+                        <!-- 基础信息 -->
+                        <div class="card">
+                            <h2 class="card-title"><i class="fas fa-info-circle"></i> 基础信息</h2>
+                            <div class="form-group">
+                                <label for="productName" class="required">产品名称</label>
+                                <input type="text" id="productName" placeholder="请输入产品全称">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label for="productCategory" class="required">产品品类</label>
+                                    <select id="productCategory">
+                                        <option value="">请选择品类</option>
+                                        <option value="美妆护肤">美妆护肤</option>
+                                        <option value="服装鞋包">服装鞋包</option>
+                                        <option value="食品饮料">食品饮料</option>
+                                        <option value="家居日用">家居日用</option>
+                                        <option value="数码家电">数码家电</option>
+                                        <option value="母婴儿童">母婴儿童</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                </div>
+                                <div class="form-col">
+                                    <label for="brandName" class="required">品牌名称</label>
+                                    <input type="text" id="brandName" placeholder="品牌名称">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 市场与赛道分析 -->
+                        <div class="card">
+                            <h2 class="card-title"><i class="fas fa-chart-bar"></i> 市场分析</h2>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label for="marketSize" class="required">市场规模</label>
+                                    <select id="marketSize">
+                                        <option value="10">百亿级 (10分)</option>
+                                        <option value="8">十亿级 (8分)</option>
+                                        <option value="6">亿级 (6分)</option>
+                                        <option value="4">千万级 (4分)</option>
+                                        <option value="2">百万级 (2分)</option>
+                                    </select>
+                                </div>
+                                <div class="form-col">
+                                    <label for="competitionLevel" class="required">竞争程度</label>
+                                    <select id="competitionLevel">
+                                        <option value="10">低竞争 (10分)</option>
+                                        <option value="7">中等竞争 (7分)</option>
+                                        <option value="4">高竞争 (4分)</option>
+                                        <option value="2">红海市场 (2分)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="marketGrowth">年增长率 (%)</label>
+                                <input type="number" id="marketGrowth" min="0" max="100" step="1" value="15">
+                            </div>
+                            <div class="form-group">
+                                <label for="avgGPM">品类平均GPM (元)</label>
+                                <div class="input-with-unit">
+                                    <input type="number" id="avgGPM" min="0" step="100" value="800">
+                                    <span class="unit">元</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 产品与供应链 -->
+                        <div class="card">
+                            <h2 class="card-title"><i class="fas fa-box"></i> 产品与供应链</h2>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label for="monthlySales" class="required">月销量 (抖音)</label>
+                                    <input type="number" id="monthlySales" min="0" step="100" value="5000">
+                                </div>
+                                <div class="form-col">
+                                    <label for="goodRate" class="required">好评率 (%)</label>
+                                    <input type="number" id="goodRate" min="0" max="100" step="0.1" value="95.5">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label for="returnRate" class="required">退货率 (%)</label>
+                                    <input type="number" id="returnRate" min="0" max="100" step="0.1" value="8.2">
+                                </div>
+                                <div class="form-col">
+                                    <label for="repurchaseRate">复购率 (%)</label>
+                                    <input type="number" id="repurchaseRate" min="0" max="100" step="0.1" value="25.3">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label for="suggestedPrice" class="required">建议售价 (元)</label>
+                                    <div class="input-with-unit">
+                                        <input type="number" id="suggestedPrice" min="0" step="1" value="199">
+                                        <span class="unit">元</span>
+                                    </div>
+                                </div>
+                                <div class="form-col">
+                                    <label for="lowestPrice" class="required">市场最低价 (元)</label>
+                                    <div class="input-with-unit">
+                                        <input type="number" id="lowestPrice" min="0" step="1" value="189">
+                                        <span class="unit">元</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="visualEffect">内容可视化效果 (1-10分)</label>
+                                <div class="slider-container">
+                                    <input type="range" id="visualEffect" min="1" max="10" step="1" value="8">
+                                    <div class="slider-value" id="visualEffectValue">8分</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧表单 -->
+                    <div>
+                        <!-- 粉丝匹配度 -->
+                        <div class="card">
+                            <h2 class="card-title"><i class="fas fa-users"></i> 粉丝匹配度</h2>
+                            <div class="form-group">
+                                <label for="genderMatch">性别匹配度 (1-10分)</label>
+                                <div class="slider-container">
+                                    <input type="range" id="genderMatch" min="1" max="10" step="1" value="9">
+                                    <div class="slider-value" id="genderMatchValue">9分</div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="ageMatch">年龄匹配度 (1-10分)</label>
+                                <div class="slider-container">
+                                    <input type="range" id="ageMatch" min="1" max="10" step="1" value="8">
+                                    <div class="slider-value" id="ageMatchValue">8分</div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="cityMatch">城市匹配度 (1-10分)</label>
+                                <div class="slider-container">
+                                    <input type="range" id="cityMatch" min="1" max="10" step="1" value="7">
+                                    <div class="slider-value" id="cityMatchValue">7分</div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="interestMatch">兴趣匹配度 (1-10分)</label>
+                                <div class="slider-container">
+                                    <input type="range" id="interestMatch" min="1" max="10" step="1" value="9">
+                                    <div class="slider-value" id="interestMatchValue">9分</div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="historicalConversion" class="required">历史转化率 (%)</label>
+                                <div class="input-with-unit">
+                                    <input type="number" id="historicalConversion" min="0" max="100" step="0.1" value="3.2">
+                                    <span class="unit">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 财务与ROI测算 -->
+                        <div class="card">
+                            <h2 class="card-title"><i class="fas fa-calculator"></i> 财务测算</h2>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label for="commissionRate" class="required">佣金率 (%)</label>
+                                    <div class="input-with-unit">
+                                        <input type="number" id="commissionRate" min="0" max="100" step="0.1" value="20">
+                                        <span class="unit">%</span>
+                                    </div>
+                                </div>
+                                <div class="form-col">
+                                    <label for="slotFee">坑位费 (元)</label>
+                                    <div class="input-with-unit">
+                                        <input type="number" id="slotFee" min="0" step="100" value="5000">
+                                        <span class="unit">元</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <label for="trafficCostRatio" class="required">投流成本占比 (%)</label>
+                                    <div class="input-with-unit">
+                                        <input type="number" id="trafficCostRatio" min="0" max="100" step="0.1" value="12">
+                                        <span class="unit">%</span>
+                                    </div>
+                                </div>
+                                <div class="form-col">
+                                    <label for="operatingCostRatio" class="required">运营成本占比 (%)</label>
+                                    <div class="input-with-unit">
+                                        <input type="number" id="operatingCostRatio" min="0" max="100" step="0.1" value="5">
+                                        <span class="unit">%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="estimatedGMV" class="required">预估GMV (元)</label>
+                                <div class="input-with-unit">
+                                    <input type="number" id="estimatedGMV" min="0" step="1000" value="250000">
+                                    <span class="unit">元</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 风险与合规 -->
+                        <div class="card">
+                            <h2 class="card-title"><i class="fas fa-exclamation-triangle"></i> 风险评估</h2>
+                            <div class="form-group">
+                                <label>资质文件是否齐全</label>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" id="certYes" name="certification" value="10" checked>
+                                        <label for="certYes">齐全 (10分)</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="certNo" name="certification" value="0">
+                                        <label for="certNo">不齐全 (0分，一票否决)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>宣传话术风险</label>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" id="riskLow" name="risk" value="10" checked>
+                                        <label for="riskLow">低风险 (10分)</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="riskMedium" name="risk" value="7">
+                                        <label for="riskMedium">中风险 (7分)</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="riskHigh" name="risk" value="3">
+                                        <label for="riskHigh">高风险 (3分)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>品牌历史舆情</label>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" id="reputationGood" name="reputation" value="10" checked>
+                                        <label for="reputationGood">良好 (10分)</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="reputationFair" name="reputation" value="7">
+                                        <label for="reputationFair">一般 (7分)</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="reputationPoor" name="reputation" value="3">
+                                        <label for="reputationPoor">较差 (3分)</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 计算按钮 -->
+                        <div class="btn-group">
+                            <button id="calculateBtn" class="btn btn-calculate">
+                                <i class="fas fa-calculator"></i> 开始计算决策分析
+                            </button>
+                            <button id="saveTemplateBtn" class="btn btn-secondary">
+                                <i class="fas fa-save"></i> 保存为模板
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 决策分析标签 -->
+            <div id="result" class="tab-content">
+                <!-- 决策结果将在这里动态生成 -->
+                <div id="resultContent">
+                    <div class="result-card">
+                        <div class="score-display">
+                            <div class="total-score" id="totalScore">--</div>
+                            <div class="score-label">综合得分 /100</div>
+                        </div>
+                        
+                        <div style="text-align: center;">
+                            <div class="decision-badge badge-s" id="decisionBadge">等待计算</div>
+                            <div id="decisionText" style="font-size: 1.2rem; margin-top: 10px; opacity: 0.9;">请先填写数据并点击计算按钮</div>
+                        </div>
+                        
+                        <div class="action-suggestion">
+                            <h3 style="margin-bottom: 15px;"><i class="fas fa-lightbulb"></i> 行动建议</h3>
+                            <div id="actionText">等待生成行动建议...</div>
+                        </div>
+                        
+                        <div class="profit-estimate">
+                            <div class="profit-item">
+                                <div class="profit-label">预估GMV</div>
+                                <div class="profit-value" id="estimatedGMVResult">--</div>
+                            </div>
+                            <div class="profit-item">
+                                <div class="profit-label">预估订单</div>
+                                <div class="profit-value" id="estimatedOrders">--</div>
+                            </div>
+                            <div class="profit-item">
+                                <div class="profit-label">预估利润</div>
+                                <div class="profit-value" id="estimatedProfit">--</div>
+                            </div>
+                            <div class="profit-item">
+                                <div class="profit-label">预估ROI</div>
+                                <div class="profit-value" id="estimatedROI">--</div>
+                            </div>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button id="saveHistoryBtn" class="btn btn-secondary">
+                                <i class="fas fa-history"></i> 保存到历史记录
+                            </button>
+                            <button id="exportResultBtn" class="btn">
+                                <i class="fas fa-download"></i> 导出分析报告
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-chart-radar"></i> 能力雷达图</h2>
+                        <div class="chart-container">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-star-half-alt"></i> 模块得分详情</h2>
+                        <div class="module-scores" id="moduleScores">
+                            <!-- 动态生成模块得分 -->
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2 class="card-title"><i class="fas fa-exclamation-circle"></i> 风险提示与建议</h2>
+                        <div class="risk-warnings" id="riskWarnings">
+                            <div class="warning-item success">
+                                <i class="fas fa-check-circle warning-icon"></i>
+                                <div>
+                                    <strong>数据完整</strong>
+                                    <p>所有必填数据已录入，可以进行计算分析</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 历史记录标签 -->
+            <div id="history" class="tab-content">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-history"></i> 历史评估记录</h2>
+                    
+                    <!-- 历史记录统计 -->
+                    <div class="history-stats" id="historyStats">
+                        <div class="stat-card">
+                            <div class="stat-label">总评估数</div>
+                            <div class="stat-value" id="totalEvaluations">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">S/A级评估</div>
+                            <div class="stat-value stat-s" id="highScoreEvaluations">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">平均得分</div>
+                            <div class="stat-value stat-a" id="avgScore">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">预估总利润</div>
+                            <div class="stat-value stat-s" id="totalProfit">¥0</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 历史记录筛选 -->
+                    <div class="history-filters">
+                        <div class="filter-group">
+                            <label for="filterCategory">品类筛选</label>
+                            <select id="filterCategory">
+                                <option value="">所有品类</option>
+                                <option value="美妆护肤">美妆护肤</option>
+                                <option value="服装鞋包">服装鞋包</option>
+                                <option value="食品饮料">食品饮料</option>
+                                <option value="家居日用">家居日用</option>
+                                <option value="数码家电">数码家电</option>
+                                <option value="母婴儿童">母婴儿童</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterDecision">决策等级</label>
+                            <select id="filterDecision">
+                                <option value="">所有等级</option>
+                                <option value="S">S级-战略合作</option>
+                                <option value="A">A级-重点合作</option>
+                                <option value="B">B级-可合作</option>
+                                <option value="C">C级-谨慎合作</option>
+                                <option value="D">D级-放弃</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterDate">评估时间</label>
+                            <select id="filterDate">
+                                <option value="">全部时间</option>
+                                <option value="7">最近7天</option>
+                                <option value="30">最近30天</option>
+                                <option value="90">最近90天</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>&nbsp;</label>
+                            <div class="btn-group">
+                                <button id="applyFilterBtn" class="btn">
+                                    <i class="fas fa-filter"></i> 应用筛选
+                                </button>
+                                <button id="clearFilterBtn" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> 清除筛选
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 历史记录表格 -->
+                    <div class="history-table-container">
+                        <table class="history-table" id="historyTable">
+                            <thead>
+                                <tr>
+                                    <th>产品名称</th>
+                                    <th>品类</th>
+                                    <th>评估时间</th>
+                                    <th>综合得分</th>
+                                    <th>决策等级</th>
+                                    <th>预估利润</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <!-- 历史记录将在这里动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 空状态提示 -->
+                    <div class="no-data" id="noHistoryData" style="display: none;">
+                        <i class="fas fa-database"></i>
+                        <h3>暂无历史记录</h3>
+                        <p>请先进行一次产品评估，结果将自动保存到历史记录中</p>
+                    </div>
+                    
+                    <!-- 批量操作 -->
+                    <div class="btn-group" style="margin-top: 20px;">
+                        <button id="exportAllBtn" class="btn">
+                            <i class="fas fa-file-export"></i> 导出所有记录
+                        </button>
+                        <button id="clearAllBtn" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> 清空所有记录
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 数据导入标签 -->
+            <div id="import" class="tab-content">
+                <div class="card">
+                    <h2 class="card-title"><i class="fas fa-file-import"></i> 抖音罗盘数据导入</h2>
+                    
+                    <div class="form-group">
+                        <label>选择数据导入方式</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="importMethod1" name="importMethod" value="csv" checked>
+                                <label for="importMethod1">CSV文件导入</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="importMethod2" name="importMethod" value="json">
+                                <label for="importMethod2">JSON数据导入</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="importMethod3" name="importMethod" value="template">
+                                <label for="importMethod3">使用数据模板</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CSV文件导入 -->
+                    <div id="csvImport" class="import-section">
+                        <div class="form-group">
+                            <label for="csvFile">选择抖音罗盘导出的CSV文件</label>
+                            <input type="file" id="csvFile" accept=".csv" style="padding: 8px;">
+                            <p class="form-hint" style="margin-top: 8px; color: #666; font-size: 0.9rem;">
+                                支持抖音罗盘电商版导出的数据文件，系统会自动解析字段
+                            </p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="csvTemplate">下载数据模板</label>
+                            <div class="btn-group">
+                                <button id="downloadCSVTemplate" class="btn btn-secondary">
+                                    <i class="fas fa-download"></i> 下载CSV模板
+                                </button>
+                                <button id="downloadJSONTemplate" class="btn btn-secondary">
+                                    <i class="fas fa-download"></i> 下载JSON模板
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- JSON数据导入 -->
+                    <div id="jsonImport" class="import-section" style="display: none;">
+                        <div class="form-group">
+                            <label for="jsonData">粘贴抖音罗盘JSON数据</label>
+                            <textarea id="jsonData" rows="10" placeholder="请粘贴抖音罗盘API返回的JSON数据或手动编辑的数据..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>示例数据格式：</label>
+                            <pre>{
+  "product_name": "商品名称",
+  "category": "商品类目",
+  "brand": "品牌名称",
+  "gmv_30d": 250000,
+  "sales_30d": 5000,
+  "order_conversion": 3.2,
+  "return_rate": 8.2,
+  "good_rate": 95.5,
+  "avg_price": 199,
+  "commission_rate": 20,
+  "gpm": 800,
+  "gender_match": 9,
+  "age_match": 8,
+  "city_match": 7,
+  "interest_match": 9
+}</pre>
+                        </div>
+                    </div>
+
+                    <!-- 数据预览 -->
+                    <div id="dataPreview" style="display: none; margin-top: 20px;">
+                        <h3 class="card-title"><i class="fas fa-eye"></i> 数据预览</h3>
+                        <div class="history-table-container">
+                            <table class="history-table" id="importPreviewTable">
+                                <thead>
+                                    <tr>
+                                        <th>产品名称</th>
+                                        <th>类目</th>
+                                        <th>30天GMV</th>
+                                        <th>30天销量</th>
+                                        <th>转化率</th>
+                                        <th>好评率</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="importPreviewBody">
+                                    <!-- 数据预览行将在这里动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 导入按钮 -->
+                    <div class="btn-group" style="margin-top: 30px;">
+                        <button id="previewImportBtn" class="btn btn-secondary">
+                            <i class="fas fa-search"></i> 预览数据
+                        </button>
+                        <button id="importDataBtn" class="btn btn-calculate" style="display: none;">
+                            <i class="fas fa-bolt"></i> 一键智能评分
+                        </button>
+                        <button id="clearImportBtn" class="btn btn-danger" style="display: none;">
+                            <i class="fas fa-times"></i> 清空数据
+                        </button>
+                    </div>
+
+                    <!-- 导入结果 -->
+                    <div id="importResults" style="display: none; margin-top: 30px;">
+                        <div class="result-card">
+                            <h3 class="card-title" style="color: white;"><i class="fas fa-chart-line"></i> 导入结果汇总</h3>
+                            
+                            <div class="history-stats">
+                                <div class="stat-card">
+                                    <div class="stat-label">导入产品数</div>
+                                    <div class="stat-value stat-s" id="importedCount">0</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">S/A级产品</div>
+                                    <div class="stat-value stat-a" id="importedHighScore">0</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">平均得分</div>
+                                    <div class="stat-value stat-b" id="importedAvgScore">0</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">预估总利润</div>
+                                    <div class="stat-value stat-s" id="importedTotalProfit">¥0</div>
+                                </div>
+                            </div>
+
+                            <div class="btn-group" style="margin-top: 20px;">
+                                <button id="viewImportDetails" class="btn">
+                                    <i class="fas fa-list"></i> 查看详细评分
+                                </button>
+                                <button id="saveAllImport" class="btn btn-calculate">
+                                    <i class="fas fa-save"></i> 全部保存到历史
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 历史记录详情模态框 -->
+        <div class="modal" id="historyDetailModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">评估记录详情</h3>
+                    <button class="modal-close" id="closeDetailModal">&times;</button>
+                </div>
+                <div class="modal-body" id="historyDetailContent">
+                    <!-- 详情内容将在这里动态生成 -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="closeDetailBtn">关闭</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 确认删除模态框 -->
+        <div class="modal" id="confirmDeleteModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">确认删除</h3>
+                    <button class="modal-close" id="closeDeleteModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p id="deleteConfirmText">确定要删除这条评估记录吗？此操作不可撤销。</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelDeleteBtn">取消</button>
+                    <button class="btn btn-danger" id="confirmDeleteBtn">确认删除</button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>抖音达人带货决策系统 © 2026 | 专业版 v2.0 | 数据驱动 · 科学决策</p>
+            <p style="margin-top: 10px; font-size: 0.8rem; opacity: 0.7;">
+                免责声明：本系统计算结果仅供参考，实际商业决策需结合具体情况
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // 初始化变量
+        let radarChart = null;
+        let currentHistoryData = null;
+        let historyData = JSON.parse(localStorage.getItem('darenHistoryData') || '[]');
+        let currentEvaluationData = null;
+        let deleteIndex = null;
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化滑块显示
+            updateSliderValue('visualEffect');
+            updateSliderValue('genderMatch');
+            updateSliderValue('ageMatch');
+            updateSliderValue('cityMatch');
+            updateSliderValue('interestMatch');
+            
+            // 绑定滑块事件
+            document.querySelectorAll('input[type="range"]').forEach(slider => {
+                slider.addEventListener('input', function() {
+                    updateSliderValue(this.id);
+                });
+            });
+            
+            // 绑定标签切换事件
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // 移除所有激活状态
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // 激活当前标签
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.tab).classList.add('active');
+                    
+                    // 如果是历史记录标签，刷新数据
+                    if (this.dataset.tab === 'history') {
+                        loadHistoryData();
+                    }
+                    
+                    // 如果是导入标签，初始化导入功能
+                    if (this.dataset.tab === 'import') {
+                        if (typeof initializeImportTab === 'function') {
+                            initializeImportTab();
+                        }
+                    }
+                });
+            });
+            
+            // 绑定计算按钮事件
+            document.getElementById('calculateBtn').addEventListener('click', function() {
+                if (validateInputs()) {
+                    calculateDecision();
+                    // 切换到结果标签
+                    document.querySelector('[data-tab="result"]').click();
+                }
+            });
+            
+            // 绑定保存到历史记录按钮
+            document.getElementById('saveHistoryBtn').addEventListener('click', saveToHistory);
+            
+            // 绑定保存模板按钮
+            document.getElementById('saveTemplateBtn').addEventListener('click', saveAsTemplate);
+            
+            // 绑定导出结果按钮
+            document.getElementById('exportResultBtn').addEventListener('click', exportResult);
+            
+            // 绑定历史记录筛选按钮
+            document.getElementById('applyFilterBtn').addEventListener('click', loadHistoryData);
+            document.getElementById('clearFilterBtn').addEventListener('click', clearFilters);
+            
+            // 绑定批量操作按钮
+            document.getElementById('exportAllBtn').addEventListener('click', exportAllHistory);
+            document.getElementById('clearAllBtn').addEventListener('click', confirmClearAllHistory);
+            
+            // 绑定模态框关闭按钮
+            document.getElementById('closeDetailModal').addEventListener('click', closeDetailModal);
+            document.getElementById('closeDetailBtn').addEventListener('click', closeDetailModal);
+            document.getElementById('closeDeleteModal').addEventListener('click', closeDeleteModal);
+            document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+            document.getElementById('confirmDeleteBtn').addEventListener('click', deleteHistoryItem);
+            
+            // 初始化历史记录
+            loadHistoryData();
+            
+            // 初始化示例数据
+            initializeExampleData();
+        });
+        
+        // 更新滑块数值显示
+        function updateSliderValue(sliderId) {
+            const slider = document.getElementById(sliderId);
+            const valueDisplay = document.getElementById(sliderId + 'Value');
+            if (slider && valueDisplay) {
+                valueDisplay.textContent = slider.value + '分';
+            }
+        }
+        
+        // 初始化示例数据
+        function initializeExampleData() {
+            // 如果历史记录为空，添加一些示例数据
+            if (historyData.length === 0) {
+                const exampleData = [
+                    {
+                        id: generateId(),
+                        productName: 'XX美白精华液',
+                        productCategory: '美妆护肤',
+                        brandName: 'XX品牌',
+                        evaluationDate: new Date('2026-01-20').toISOString(),
+                        totalScore: 88.5,
+                        decisionLevel: 'A级-重点合作',
+                        estimatedProfit: 28750,
+                        estimatedGMV: 250000,
+                        moduleScores: {
+                            market: 82,
+                            product: 88,
+                            fan: 95,
+                            finance: 81,
+                            content: 76,
+                            risk: 85
+                        }
+                    },
+                    {
+                        id: generateId(),
+                        productName: '智能运动手环',
+                        productCategory: '数码家电',
+                        brandName: '科技品牌',
+                        evaluationDate: new Date('2026-01-18').toISOString(),
+                        totalScore: 76.3,
+                        decisionLevel: 'B级-可合作',
+                        estimatedProfit: 15200,
+                        estimatedGMV: 180000,
+                        moduleScores: {
+                            market: 75,
+                            product: 82,
+                            fan: 70,
+                            finance: 68,
+                            content: 85,
+                            risk: 80
+                        }
+                    },
+                    {
+                        id: generateId(),
+                        productName: '有机坚果礼盒',
+                        productCategory: '食品饮料',
+                        brandName: '健康食品',
+                        evaluationDate: new Date('2026-01-15').toISOString(),
+                        totalScore: 92.1,
+                        decisionLevel: 'S级-战略合作',
+                        estimatedProfit: 42300,
+                        estimatedGMV: 320000,
+                        moduleScores: {
+                            market: 90,
+                            product: 88,
+                            fan: 95,
+                            finance: 89,
+                            content: 92,
+                            risk: 88
+                        }
+                    }
+                ];
+                
+                historyData = exampleData;
+                saveHistoryData();
+                loadHistoryData();
+            }
+        }
+        
+        // 生成唯一ID
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+        
+        // 验证输入数据
+        function validateInputs() {
+            const requiredFields = [
+                'productName', 'productCategory', 'brandName', 
+                'marketSize', 'competitionLevel', 'monthlySales',
+                'goodRate', 'returnRate', 'suggestedPrice', 'lowestPrice',
+                'historicalConversion', 'commissionRate', 'trafficCostRatio',
+                'operatingCostRatio', 'estimatedGMV'
+            ];
+            
+            let isValid = true;
+            let missingFields = [];
+            
+            requiredFields.forEach(fieldId => {
+                const element = document.getElementById(fieldId);
+                if (!element || (element.value === '' && element.value !== 0)) {
+                    isValid = false;
+                    missingFields.push(fieldId);
+                    element.style.borderColor = '#f5222d';
+                } else {
+                    element.style.borderColor = '#e8e8e8';
+                }
+            });
+            
+            // 检查资质文件
+            const certNo = document.getElementById('certNo');
+            if (certNo && certNo.checked) {
+                alert('警告：资质文件不齐全，产品评估一票否决！');
+                return false;
+            }
+            
+            if (!isValid) {
+                alert('请填写所有必填字段（标有*的字段）');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // 核心计算函数
+        function calculateDecision() {
+            // 收集所有输入数据
+            const inputData = collectInputData();
+            
+            // 计算模块得分
+            const moduleScores = calculateModuleScores(inputData);
+            
+            // 计算总分
+            const totalScore = calculateTotalScore(moduleScores);
+            
+            // 生成决策结果
+            const decisionResult = generateDecisionResult(totalScore, moduleScores, inputData);
+            
+            // 计算利润预测
+            const profitEstimate = calculateProfitEstimate(inputData);
+            
+            // 生成风险提示
+            const riskWarnings = generateRiskWarnings(inputData, moduleScores);
+            
+            // 保存当前评估数据
+            currentEvaluationData = {
+                inputData: inputData,
+                moduleScores: moduleScores,
+                totalScore: totalScore,
+                decisionResult: decisionResult,
+                profitEstimate: profitEstimate,
+                riskWarnings: riskWarnings
+            };
+            
+            // 更新UI显示结果
+            updateResultDisplay(totalScore, decisionResult, profitEstimate, riskWarnings, moduleScores);
+            
+            // 绘制雷达图
+            drawRadarChart(moduleScores);
+        }
+        
+        // 收集输入数据
+        function collectInputData() {
+            return {
+                // 基础信息
+                productName: document.getElementById('productName').value,
+                productCategory: document.getElementById('productCategory').value,
+                brandName: document.getElementById('brandName').value,
+                
+                // 市场分析
+                marketSize: parseInt(document.getElementById('marketSize').value),
+                competitionLevel: parseInt(document.getElementById('competitionLevel').value),
+                marketGrowth: parseFloat(document.getElementById('marketGrowth').value),
+                avgGPM: parseFloat(document.getElementById('avgGPM').value),
+                
+                // 产品与供应链
+                monthlySales: parseInt(document.getElementById('monthlySales').value),
+                goodRate: parseFloat(document.getElementById('goodRate').value),
+                returnRate: parseFloat(document.getElementById('returnRate').value),
+                repurchaseRate: parseFloat(document.getElementById('repurchaseRate').value),
+                suggestedPrice: parseFloat(document.getElementById('suggestedPrice').value),
+                lowestPrice: parseFloat(document.getElementById('lowestPrice').value),
+                visualEffect: parseInt(document.getElementById('visualEffect').value),
+                
+                // 粉丝匹配度
+                genderMatch: parseInt(document.getElementById('genderMatch').value),
+                ageMatch: parseInt(document.getElementById('ageMatch').value),
+                cityMatch: parseInt(document.getElementById('cityMatch').value),
+                interestMatch: parseInt(document.getElementById('interestMatch').value),
+                historicalConversion: parseFloat(document.getElementById('historicalConversion').value),
+                
+                // 财务测算
+                commissionRate: parseFloat(document.getElementById('commissionRate').value) / 100,
+                slotFee: parseFloat(document.getElementById('slotFee').value),
+                trafficCostRatio: parseFloat(document.getElementById('trafficCostRatio').value) / 100,
+                operatingCostRatio: parseFloat(document.getElementById('operatingCostRatio').value) / 100,
+                estimatedGMV: parseFloat(document.getElementById('estimatedGMV').value),
+                
+                // 风险评估
+                certification: document.querySelector('input[name="certification"]:checked').value,
+                riskLevel: document.querySelector('input[name="risk"]:checked').value,
+                reputation: document.querySelector('input[name="reputation"]:checked').value
+            };
+        }
+        
+        // 计算模块得分
+        function calculateModuleScores(data) {
+            // 市场分析模块 (权重15%)
+            const marketScore = (data.marketSize + parseInt(data.competitionLevel)) / 2;
+            
+            // 产品与供应链模块 (权重20%)
+            const productScore = calculateProductScore(data);
+            
+            // 粉丝匹配度模块 (权重25%)
+            const fanScore = calculateFanScore(data);
+            
+            // 财务测算模块 (权重25%)
+            const financeScore = calculateFinanceScore(data);
+            
+            // 内容策略模块 (权重10%，简化计算)
+            const contentScore = (data.visualEffect * 10) * 0.6 + 70 * 0.4;
+            
+            // 风险控制模块 (权重5%)
+            const riskScore = (parseInt(data.riskLevel) + parseInt(data.reputation)) / 2 * 10;
+            
+            return {
+                market: Math.min(marketScore * 10, 100),
+                product: Math.min(productScore, 100),
+                fan: Math.min(fanScore, 100),
+                finance: Math.min(financeScore, 100),
+                content: Math.min(contentScore, 100),
+                risk: Math.min(riskScore, 100)
+            };
+        }
+        
+        // 计算产品得分
+        function calculateProductScore(data) {
+            // 销量得分 (0-30分)
+            let salesScore = 0;
+            if (data.monthlySales >= 10000) salesScore = 30;
+            else if (data.monthlySales >= 5000) salesScore = 25;
+            else if (data.monthlySales >= 1000) salesScore = 20;
+            else if (data.monthlySales >= 500) salesScore = 15;
+            else salesScore = 10;
+            
+            // 好评率得分 (0-30分)
+            const goodRateScore = data.goodRate * 0.3;
+            
+            // 复购率得分 (0-20分)
+            const repurchaseScore = Math.min(data.repurchaseRate * 0.8, 20);
+            
+            // 可视化得分 (0-20分)
+            const visualScore = data.visualEffect * 2;
+            
+            return salesScore + goodRateScore + repurchaseScore + visualScore;
+        }
+        
+        // 计算粉丝匹配得分
+        function calculateFanScore(data) {
+            // 人口统计学匹配 (0-40分)
+            const demoScore = (data.genderMatch + data.ageMatch + data.cityMatch) / 3 * 4;
+            
+            // 兴趣匹配 (0-30分)
+            const interestScore = data.interestMatch * 3;
+            
+            // 历史转化率得分 (0-30分)
+            let conversionScore = 0;
+            if (data.historicalConversion >= 5) conversionScore = 30;
+            else if (data.historicalConversion >= 3) conversionScore = 25;
+            else if (data.historicalConversion >= 1.5) conversionScore = 20;
+            else if (data.historicalConversion >= 0.5) conversionScore = 15;
+            else conversionScore = 10;
+            
+            return demoScore + interestScore + conversionScore;
+        }
+        
+        // 计算财务得分
+        function calculateFinanceScore(data) {
+            // 利润率得分 (0-40分)
+            const netProfitRate = data.commissionRate - data.trafficCostRatio - data.operatingCostRatio;
+            let profitScore = 0;
+            if (netProfitRate >= 0.25) profitScore = 40;
+            else if (netProfitRate >= 0.20) profitScore = 35;
+            else if (netProfitRate >= 0.15) profitScore = 30;
+            else if (netProfitRate >= 0.10) profitScore = 25;
+            else if (netProfitRate >= 0.05) profitScore = 20;
+            else profitScore = 10;
+            
+            // ROI得分 (0-30分)
+            const estimatedROI = calculateROI(data);
+            let roiScore = Math.min(estimatedROI * 6, 30);
+            
+            // 价格匹配得分 (0-30分)
+            const priceDiff = (data.suggestedPrice - data.lowestPrice) / data.lowestPrice;
+            let priceScore = 0;
+            if (priceDiff <= 0) priceScore = 30; // 最低价
+            else if (priceDiff <= 0.05) priceScore = 25; // 高5%以内
+            else if (priceDiff <= 0.10) priceScore = 20; // 高10%以内
+            else if (priceDiff <= 0.20) priceScore = 15; // 高20%以内
+            else priceScore = 5; // 高20%以上
+            
+            return profitScore + roiScore + priceScore;
+        }
+        
+        // 计算ROI
+        function calculateROI(data) {
+            const totalIncome = data.estimatedGMV * data.commissionRate + data.slotFee;
+            const trafficCost = data.estimatedGMV * data.trafficCostRatio;
+            const operatingCost = data.estimatedGMV * data.operatingCostRatio;
+            const platformFee = data.estimatedGMV * 0.05; // 平台扣点5%
+            
+            const totalCost = trafficCost + operatingCost + platformFee;
+            
+            if (totalCost === 0) return 0;
+            return (totalIncome - totalCost) / totalCost;
+        }
+        
+        // 计算总分
+        function calculateTotalScore(moduleScores) {
+            const weights = {
+                market: 0.15,
+                product: 0.20,
+                fan: 0.25,
+                finance: 0.25,
+                content: 0.10,
+                risk: 0.05
+            };
+            
+            let total = 0;
+            for (const module in moduleScores) {
+                total += moduleScores[module] * weights[module];
+            }
+            
+            return Math.round(total * 10) / 10;
+        }
+        
+        // 生成决策结果
+        function generateDecisionResult(totalScore, moduleScores, inputData) {
+            let decision = {};
+            
+            if (totalScore >= 90) {
+                decision = {
+                    level: 'S级-战略合作',
+                    badgeClass: 'badge-s',
+                    action: '可申请独家授权，投入最大资源，争取品牌长期合作。建议重点策划内容，可投入付费流量放大效果。'
+                };
+            } else if (totalScore >= 80) {
+                decision = {
+                    level: 'A级-重点合作',
+                    badgeClass: 'badge-a',
+                    action: '作为主力货品，精心策划内容，可适当投入付费流量。建议优化佣金条款，争取更好条件。'
+                };
+            } else if (totalScore >= 70) {
+                decision = {
+                    level: 'B级-可合作',
+                    badgeClass: 'badge-b',
+                    action: '可合作，建议优化条款或调整内容策略。考虑纯佣模式降低风险，小规模测试数据。'
+                };
+            } else if (totalScore >= 60) {
+                decision = {
+                    level: 'C级-谨慎合作',
+                    badgeClass: 'badge-c',
+                    action: '建议重新谈判条件或改进选品。如必须合作，采用纯佣测品模式，严格控制投入规模。'
+                };
+            } else {
+                decision = {
+                    level: 'D级-放弃',
+                    badgeClass: 'badge-d',
+                    action: '综合评估风险过高，建议寻找替代品。如有特殊原因必须合作，需制定严格的风险控制方案。'
+                };
+            }
+            
+            // 根据模块短板添加具体建议
+            let lowestModule = '';
+            let lowestScore = 100;
+            
+            for (const module in moduleScores) {
+                if (moduleScores[module] < lowestScore && module !== 'risk') {
+                    lowestScore = moduleScores[module];
+                    lowestModule = module;
+                }
+            }
+            
+            if (lowestScore < 70) {
+                const moduleNames = {
+                    market: '市场分析',
+                    product: '产品竞争力',
+                    fan: '粉丝匹配度',
+                    finance: '财务测算',
+                    content: '内容策略'
+                };
+                
+                decision.action += ` 特别需要注意${moduleNames[lowestModule]}模块的优化。`;
+            }
+            
+            return decision;
+        }
+        
+        // 计算利润预测
+        function calculateProfitEstimate(data) {
+            // 收入
+            const commissionIncome = data.estimatedGMV * data.commissionRate;
+            const totalIncome = commissionIncome + data.slotFee;
+            
+            // 成本
+            const trafficCost = data.estimatedGMV * data.trafficCostRatio;
+            const operatingCost = data.estimatedGMV * data.operatingCostRatio;
+            const platformFee = data.estimatedGMV * 0.05; // 平台扣点5%
+            
+            const totalCost = trafficCost + operatingCost + platformFee;
+            
+            // 利润
+            const netProfit = totalIncome - totalCost;
+            const netProfitRate = netProfit / data.estimatedGMV;
+            
+            // 预估订单数
+            const estimatedOrders = Math.round(data.estimatedGMV / data.suggestedPrice);
+            
+            // ROI
+            const roi = totalCost > 0 ? (totalIncome - totalCost) / totalCost : 0;
+            
+            // 保本GMV
+            const breakevenGMV = data.slotFee / (data.commissionRate - data.trafficCostRatio);
+            
+            return {
+                estimatedGMV: data.estimatedGMV,
+                estimatedOrders: estimatedOrders,
+                totalIncome: totalIncome,
+                totalCost: totalCost,
+                netProfit: netProfit,
+                netProfitRate: netProfitRate,
+                roi: roi,
+                breakevenGMV: breakevenGMV
+            };
+        }
+        
+        // 生成风险提示
+        function generateRiskWarnings(data, moduleScores) {
+            const warnings = [];
+            
+            // 检查资质风险
+            if (data.certification === '0') {
+                warnings.push({
+                    type: 'danger',
+                    title: '资质风险',
+                    message: '资质文件不齐全，存在合规风险！',
+                    icon: 'exclamation-triangle'
+                });
+            }
+            
+            // 检查退货率
+            if (data.returnRate > 15) {
+                warnings.push({
+                    type: 'warning',
+                    title: '高退货率风险',
+                    message: `退货率${data.returnRate}%高于行业平均水平，需优化售后策略。`,
+                    icon: 'exchange-alt'
+                });
+            }
+            
+            // 检查价格差异
+            const priceDiff = (data.suggestedPrice - data.lowestPrice) / data.lowestPrice;
+            if (priceDiff > 0.2) {
+                warnings.push({
+                    type: 'warning',
+                    title: '价格竞争力不足',
+                    message: `售价高于市场最低价${(priceDiff*100).toFixed(1)}%，需强化价值塑造。`,
+                    icon: 'tags'
+                });
+            }
+            
+            // 检查利润率
+            const netProfitRate = data.commissionRate - data.trafficCostRatio - data.operatingCostRatio;
+            if (netProfitRate < 0.1) {
+                warnings.push({
+                    type: 'warning',
+                    title: '利润率偏低',
+                    message: `净利润率${(netProfitRate*100).toFixed(1)}%，建议谈判提高佣金。`,
+                    icon: 'money-bill-wave'
+                });
+            }
+            
+            // 添加优势项
+            if (moduleScores.fan >= 85) {
+                warnings.push({
+                    type: 'success',
+                    title: '粉丝匹配度高',
+                    message: '粉丝匹配度优秀，预期转化率良好。',
+                    icon: 'users'
+                });
+            }
+            
+            if (data.goodRate >= 97) {
+                warnings.push({
+                    type: 'success',
+                    title: '产品质量优秀',
+                    message: `好评率${data.goodRate}%，产品质量有保障。`,
+                    icon: 'star'
+                });
+            }
+            
+            // 如果没有风险，添加默认提示
+            if (warnings.length === 0) {
+                warnings.push({
+                    type: 'success',
+                    title: '风险可控',
+                    message: '经评估，该项目风险在可控范围内。',
+                    icon: 'check-circle'
+                });
+            }
+            
+            return warnings;
+        }
+        
+        // 更新结果展示
+        function updateResultDisplay(totalScore, decisionResult, profitEstimate, riskWarnings, moduleScores) {
+            // 更新总分
+            document.getElementById('totalScore').textContent = totalScore;
+            
+            // 更新决策等级
+            const decisionBadge = document.getElementById('decisionBadge');
+            decisionBadge.textContent = decisionResult.level;
+            decisionBadge.className = `decision-badge ${decisionResult.badgeClass}`;
+            
+            // 更新决策文本
+            document.getElementById('decisionText').textContent = 
+                `综合评分: ${totalScore}/100 | 建议: ${decisionResult.level.split('-')[1]}`;
+            
+            // 更新行动建议
+            document.getElementById('actionText').textContent = decisionResult.action;
+            
+            // 更新利润预测
+            document.getElementById('estimatedGMVResult').textContent = 
+                formatCurrency(profitEstimate.estimatedGMV);
+            document.getElementById('estimatedOrders').textContent = 
+                profitEstimate.estimatedOrders.toLocaleString() + '单';
+            document.getElementById('estimatedProfit').textContent = 
+                formatCurrency(profitEstimate.netProfit);
+            document.getElementById('estimatedROI').textContent = 
+                profitEstimate.roi.toFixed(2) + ':1';
+            
+            // 更新模块得分
+            updateModuleScoresDisplay(moduleScores);
+            
+            // 更新风险提示
+            updateRiskWarningsDisplay(riskWarnings);
+        }
+        
+        // 更新模块得分显示
+        function updateModuleScoresDisplay(moduleScores) {
+            const moduleScoresContainer = document.getElementById('moduleScores');
+            moduleScoresContainer.innerHTML = '';
+            
+            const moduleNames = {
+                market: '市场分析',
+                product: '产品竞争力',
+                fan: '粉丝匹配度',
+                finance: '财务测算',
+                content: '内容策略',
+                risk: '风险控制'
+            };
+            
+            for (const module in moduleScores) {
+                const score = Math.round(moduleScores[module]);
+                const scoreColor = getScoreColor(score);
+                
+                const moduleDiv = document.createElement('div');
+                moduleDiv.className = 'module-score-item';
+                moduleDiv.innerHTML = `
+                    <div class="module-name">${moduleNames[module]}</div>
+                    <div class="module-score" style="color: ${scoreColor}">${score}</div>
+                    <div style="font-size: 0.8rem; color: #888;">/100</div>
+                `;
+                
+                moduleScoresContainer.appendChild(moduleDiv);
+            }
+        }
+        
+        // 更新风险提示显示
+        function updateRiskWarningsDisplay(warnings) {
+            const riskWarningsContainer = document.getElementById('riskWarnings');
+            riskWarningsContainer.innerHTML = '';
+            
+            warnings.forEach(warning => {
+                const warningDiv = document.createElement('div');
+                warningDiv.className = `warning-item ${warning.type === 'success' ? 'success' : ''}`;
+                warningDiv.innerHTML = `
+                    <i class="fas fa-${warning.icon} warning-icon"></i>
+                    <div>
+                        <strong>${warning.title}</strong>
+                        <p>${warning.message}</p>
+                    </div>
+                `;
+                
+                riskWarningsContainer.appendChild(warningDiv);
+            });
+        }
+        
+        // 绘制雷达图
+        function drawRadarChart(moduleScores) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            // 如果已有图表，先销毁
+            if (radarChart) {
+                radarChart.destroy();
+            }
+            
+            // 准备数据
+            const moduleNames = ['市场分析', '产品竞争力', '粉丝匹配度', '财务测算', '内容策略', '风险控制'];
+            const scores = [
+                moduleScores.market,
+                moduleScores.product,
+                moduleScores.fan,
+                moduleScores.finance,
+                moduleScores.content,
+                moduleScores.risk
+            ];
+            
+            // 创建雷达图
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: moduleNames,
+                    datasets: [{
+                        label: '模块得分',
+                        data: scores,
+                        backgroundColor: 'rgba(24, 144, 255, 0.2)',
+                        borderColor: 'rgba(24, 144, 255, 1)',
+                        pointBackgroundColor: 'rgba(24, 144, 255, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(24, 144, 255, 1)',
+                        borderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: {
+                                stepSize: 20,
+                                backdropColor: 'transparent'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                },
+                                color: '#333'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw.toFixed(1)}分`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 保存到历史记录
+        function saveToHistory() {
+            if (!currentEvaluationData) {
+                alert('请先进行计算评估');
+                return;
+            }
+            
+            const historyItem = {
+                id: generateId(),
+                productName: currentEvaluationData.inputData.productName,
+                productCategory: currentEvaluationData.inputData.productCategory,
+                brandName: currentEvaluationData.inputData.brandName,
+                evaluationDate: new Date().toISOString(),
+                totalScore: currentEvaluationData.totalScore,
+                decisionLevel: currentEvaluationData.decisionResult.level,
+                estimatedProfit: currentEvaluationData.profitEstimate.netProfit,
+                estimatedGMV: currentEvaluationData.inputData.estimatedGMV,
+                moduleScores: currentEvaluationData.moduleScores,
+                inputData: currentEvaluationData.inputData,
+                profitEstimate: currentEvaluationData.profitEstimate
+            };
+            
+            // 添加到历史记录数组
+            historyData.unshift(historyItem);
+            
+            // 保存到本地存储
+            saveHistoryData();
+            
+            // 更新历史记录显示
+            loadHistoryData();
+            
+            // 提示保存成功
+            alert('已成功保存到历史记录！');
+            
+            // 切换到历史记录标签
+            document.querySelector('[data-tab="history"]').click();
+        }
+        
+        // 保存为模板
+        function saveAsTemplate() {
+            const inputData = collectInputData();
+            
+            if (!inputData.productName) {
+                alert('请先填写产品名称');
+                return;
+            }
+            
+            const template = {
+                name: inputData.productName + '模板',
+                data: inputData,
+                saveDate: new Date().toISOString()
+            };
+            
+            // 获取现有模板
+            let templates = JSON.parse(localStorage.getItem('darenTemplates') || '[]');
+            templates.unshift(template);
+            
+            // 限制模板数量
+            if (templates.length > 10) {
+                templates = templates.slice(0, 10);
+            }
+            
+            // 保存到本地存储
+            localStorage.setItem('darenTemplates', JSON.stringify(templates));
+            
+            alert(`模板"${template.name}"保存成功！`);
+        }
+        
+        // 导出结果
+        function exportResult() {
+            if (!currentEvaluationData) {
+                alert('请先进行计算评估');
+                return;
+            }
+            
+            const data = {
+                评估报告: '抖音达人带货决策分析报告',
+                评估时间: new Date().toLocaleString(),
+                产品名称: currentEvaluationData.inputData.productName,
+                产品品类: currentEvaluationData.inputData.productCategory,
+                品牌名称: currentEvaluationData.inputData.brandName,
+                综合得分: currentEvaluationData.totalScore,
+                决策等级: currentEvaluationData.decisionResult.level,
+                行动建议: currentEvaluationData.decisionResult.action,
+                预估GMV: formatCurrency(currentEvaluationData.profitEstimate.estimatedGMV),
+                预估订单: currentEvaluationData.profitEstimate.estimatedOrders + '单',
+                预估利润: formatCurrency(currentEvaluationData.profitEstimate.netProfit),
+                预估ROI: currentEvaluationData.profitEstimate.roi.toFixed(2) + ':1',
+                模块得分: currentEvaluationData.moduleScores
+            };
+            
+            const content = JSON.stringify(data, null, 2);
+            downloadFile(content, `带货决策报告_${currentEvaluationData.inputData.productName}_${new Date().getTime()}.json`);
+        }
+        
+        // 加载历史记录数据
+        function loadHistoryData() {
+            // 获取筛选条件
+            const categoryFilter = document.getElementById('filterCategory').value;
+            const decisionFilter = document.getElementById('filterDecision').value;
+            const dateFilter = document.getElementById('filterDate').value;
+            
+            // 筛选数据
+            let filteredData = historyData;
+            
+            if (categoryFilter) {
+                filteredData = filteredData.filter(item => item.productCategory === categoryFilter);
+            }
+            
+            if (decisionFilter) {
+                filteredData = filteredData.filter(item => item.decisionLevel.startsWith(decisionFilter));
+            }
+            
+            if (dateFilter) {
+                const days = parseInt(dateFilter);
+                const cutoffDate = new Date();
+                cutoffDate.setDate(cutoffDate.getDate() - days);
+                
+                filteredData = filteredData.filter(item => {
+                    const itemDate = new Date(item.evaluationDate);
+                    return itemDate >= cutoffDate;
+                });
+            }
+            
+            // 更新当前历史数据
+            currentHistoryData = filteredData;
+            
+            // 更新统计信息
+            updateHistoryStats(filteredData);
+            
+            // 更新表格
+            updateHistoryTable(filteredData);
+            
+            // 显示/隐藏空状态
+            const noDataElement = document.getElementById('noHistoryData');
+            if (filteredData.length === 0) {
+                noDataElement.style.display = 'block';
+            } else {
+                noDataElement.style.display = 'none';
+            }
+        }
+        
+        // 更新历史记录统计
+        function updateHistoryStats(data) {
+            const total = data.length;
+            const highScore = data.filter(item => item.totalScore >= 80).length;
+            const avgScore = total > 0 ? (data.reduce((sum, item) => sum + item.totalScore, 0) / total).toFixed(1) : 0;
+            const totalProfit = data.reduce((sum, item) => sum + item.estimatedProfit, 0);
+            
+            document.getElementById('totalEvaluations').textContent = total;
+            document.getElementById('highScoreEvaluations').textContent = highScore;
+            document.getElementById('avgScore').textContent = avgScore;
+            document.getElementById('totalProfit').textContent = formatCurrency(totalProfit);
+        }
+        
+        // 更新历史记录表格
+        function updateHistoryTable(data) {
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+            
+            data.forEach((item, index) => {
+                const row = document.createElement('tr');
+                const evaluationDate = new Date(item.evaluationDate);
+                const dateStr = evaluationDate.toLocaleDateString() + ' ' + evaluationDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                // 获取决策等级的颜色类
+                let decisionClass = '';
+                if (item.decisionLevel.startsWith('S')) decisionClass = 'stat-s';
+                else if (item.decisionLevel.startsWith('A')) decisionClass = 'stat-a';
+                else if (item.decisionLevel.startsWith('B')) decisionClass = 'stat-b';
+                else if (item.decisionLevel.startsWith('C')) decisionClass = 'stat-c';
+                else if (item.decisionLevel.startsWith('D')) decisionClass = 'stat-d';
+                
+                row.innerHTML = `
+                    <td>${item.productName}</td>
+                    <td>${item.productCategory}</td>
+                    <td>${dateStr}</td>
+                    <td class="score-cell" style="color: ${getScoreColor(item.totalScore)}">${item.totalScore}</td>
+                    <td><span class="${decisionClass}" style="font-weight: 600;">${item.decisionLevel}</span></td>
+                    <td>${formatCurrency(item.estimatedProfit)}</td>
+                    <td class="action-cell">
+                        <div class="history-actions">
+                            <button class="history-btn view" onclick="viewHistoryDetail('${item.id}')">
+                                <i class="fas fa-eye"></i> 查看
+                            </button>
+                            <button class="history-btn delete" onclick="confirmDelete('${index}')">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                            <button class="history-btn export" onclick="exportHistoryItem('${item.id}')">
+                                <i class="fas fa-download"></i> 导出
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        // 查看历史记录详情
+        function viewHistoryDetail(id) {
+            const item = historyData.find(item => item.id === id);
+            if (!item) return;
+            
+            const modalContent = document.getElementById('historyDetailContent');
+            const moduleScores = item.moduleScores || {};
+            
+            // 生成详情内容
+            modalContent.innerHTML = `
+                <div class="result-card" style="margin-bottom: 20px;">
+                    <div class="score-display">
+                        <div class="total-score">${item.totalScore}</div>
+                        <div class="score-label">综合得分 /100</div>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <div class="decision-badge ${getBadgeClass(item.decisionLevel)}">${item.decisionLevel}</div>
+                    </div>
+                    
+                    <div class="profit-estimate">
+                        <div class="profit-item">
+                            <div class="profit-label">产品名称</div>
+                            <div class="profit-value">${item.productName}</div>
+                        </div>
+                        <div class="profit-item">
+                            <div class="profit-label">产品品类</div>
+                            <div class="profit-value">${item.productCategory}</div>
+                        </div>
+                        <div class="profit-item">
+                            <div class="profit-label">预估GMV</div>
+                            <div class="profit-value">${formatCurrency(item.estimatedGMV)}</div>
+                        </div>
+                        <div class="profit-item">
+                            <div class="profit-label">预估利润</div>
+                            <div class="profit-value">${formatCurrency(item.estimatedProfit)}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-star-half-alt"></i> 模块得分详情</h3>
+                    <div class="module-scores">
+                        ${Object.entries(moduleScores).map(([module, score]) => `
+                            <div class="module-score-item">
+                                <div class="module-name">${getModuleName(module)}</div>
+                                <div class="module-score" style="color: ${getScoreColor(score)}">${Math.round(score)}</div>
+                                <div style="font-size: 0.8rem; color: #888;">/100</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-info-circle"></i> 评估信息</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <p><strong>品牌名称：</strong>${item.brandName}</p>
+                            <p><strong>评估时间：</strong>${new Date(item.evaluationDate).toLocaleString()}</p>
+                        </div>
+                        <div>
+                            <p><strong>保存ID：</strong>${item.id}</p>
+                            <p><strong>数据版本：</strong>v2.0</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 显示模态框
+            document.getElementById('historyDetailModal').classList.add('active');
+        }
+        
+        // 确认删除
+        function confirmDelete(index) {
+            deleteIndex = index;
+            const item = historyData[index];
+            document.getElementById('deleteConfirmText').textContent = 
+                `确定要删除产品"${item.productName}"的评估记录吗？此操作不可撤销。`;
+            document.getElementById('confirmDeleteModal').classList.add('active');
+        }
+        
+        // 删除历史记录项
+        function deleteHistoryItem() {
+            if (deleteIndex !== null) {
+                historyData.splice(deleteIndex, 1);
+                saveHistoryData();
+                loadHistoryData();
+                closeDeleteModal();
+                alert('删除成功！');
+            }
+        }
+        
+        // 导出历史记录项
+        function exportHistoryItem(id) {
+            const item = historyData.find(item => item.id === id);
+            if (!item) return;
+            
+            const content = JSON.stringify(item, null, 2);
+            downloadFile(content, `历史记录_${item.productName}_${new Date(item.evaluationDate).getTime()}.json`);
+        }
+        
+        // 导出所有历史记录
+        function exportAllHistory() {
+            if (historyData.length === 0) {
+                alert('暂无历史记录可导出');
+                return;
+            }
+            
+            const exportData = {
+                导出时间: new Date().toLocaleString(),
+                总记录数: historyData.length,
+                数据版本: 'v2.0',
+                历史记录: historyData
+            };
+            
+            const content = JSON.stringify(exportData, null, 2);
+            downloadFile(content, `历史记录_批量导出_${new Date().getTime()}.json`);
+        }
+        
+        // 确认清空所有历史记录
+        function confirmClearAllHistory() {
+            if (historyData.length === 0) {
+                alert('暂无历史记录可清空');
+                return;
+            }
+            
+            if (confirm(`确定要清空所有${historyData.length}条历史记录吗？此操作不可撤销！`)) {
+                historyData = [];
+                saveHistoryData();
+                loadHistoryData();
+                alert('已清空所有历史记录！');
+            }
+        }
+        
+        // 清除筛选条件
+        function clearFilters() {
+            document.getElementById('filterCategory').value = '';
+            document.getElementById('filterDecision').value = '';
+            document.getElementById('filterDate').value = '';
+            loadHistoryData();
+        }
+        
+        // 关闭详情模态框
+        function closeDetailModal() {
+            document.getElementById('historyDetailModal').classList.remove('active');
+        }
+        
+        // 关闭删除确认模态框
+        function closeDeleteModal() {
+            document.getElementById('confirmDeleteModal').classList.remove('active');
+            deleteIndex = null;
+        }
+        
+        // 保存历史数据到本地存储
+        function saveHistoryData() {
+            localStorage.setItem('darenHistoryData', JSON.stringify(historyData));
+        }
+        
+        // 下载文件
+        function downloadFile(content, filename) {
+            const blob = new Blob([content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // 辅助函数：格式化货币
+        function formatCurrency(amount) {
+            if (amount >= 10000) {
+                return '¥' + (amount / 10000).toFixed(1) + '万';
+            } else {
+                return '¥' + amount.toLocaleString();
+            }
+        }
+        
+        // 辅助函数：根据分数获取颜色
+        function getScoreColor(score) {
+            if (score >= 90) return '#52c41a';
+            if (score >= 80) return '#1890ff';
+            if (score >= 70) return '#faad14';
+            if (score >= 60) return '#ff7a45';
+            return '#f5222d';
+        }
+        
+        // 辅助函数：获取决策等级的徽章类
+        function getBadgeClass(decisionLevel) {
+            if (decisionLevel.startsWith('S')) return 'badge-s';
+            if (decisionLevel.startsWith('A')) return 'badge-a';
+            if (decisionLevel.startsWith('B')) return 'badge-b';
+            if (decisionLevel.startsWith('C')) return 'badge-c';
+            if (decisionLevel.startsWith('D')) return 'badge-d';
+            return 'badge-s';
+        }
+        
+        // 辅助函数：获取模块名称
+        function getModuleName(module) {
+            const names = {
+                market: '市场分析',
+                product: '产品竞争力',
+                fan: '粉丝匹配度',
+                finance: '财务测算',
+                content: '内容策略',
+                risk: '风险控制'
+            };
+            return names[module] || module;
+        }
+        
+        // ==============================
+        // 数据导入相关功能
+        // ==============================
+        
+        // 初始化导入标签
+        function initializeImportTab() {
+            console.log('初始化导入标签');
+            
+            // 绑定导入方式切换
+            document.querySelectorAll('input[name="importMethod"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    document.getElementById('csvImport').style.display = 
+                        this.value === 'csv' ? 'block' : 'none';
+                    document.getElementById('jsonImport').style.display = 
+                        this.value === 'json' ? 'block' : 'none';
+                });
+            });
+            
+            // 确保元素存在再绑定事件
+            const csvTemplateBtn = document.getElementById('downloadCSVTemplate');
+            const jsonTemplateBtn = document.getElementById('downloadJSONTemplate');
+            
+            if (csvTemplateBtn) {
+                csvTemplateBtn.addEventListener('click', downloadCSVTemplate);
+            }
+            
+            if (jsonTemplateBtn) {
+                jsonTemplateBtn.addEventListener('click', downloadJSONTemplate);
+            }
+            
+            // 绑定其他按钮事件
+            const previewBtn = document.getElementById('previewImportBtn');
+            const importBtn = document.getElementById('importDataBtn');
+            const clearBtn = document.getElementById('clearImportBtn');
+            const viewDetailsBtn = document.getElementById('viewImportDetails');
+            const saveAllBtn = document.getElementById('saveAllImport');
+            
+            if (previewBtn) previewBtn.addEventListener('click', previewImportData);
+            if (importBtn) importBtn.addEventListener('click', importAndScoreData);
+            if (clearBtn) clearBtn.addEventListener('click', clearImportData);
+            if (viewDetailsBtn) viewDetailsBtn.addEventListener('click', viewImportDetails);
+            if (saveAllBtn) saveAllBtn.addEventListener('click', saveAllImportedData);
+            
+            // 初始化显示
+            const csvImportSection = document.getElementById('csvImport');
+            const jsonImportSection = document.getElementById('jsonImport');
+            
+            if (csvImportSection && jsonImportSection) {
+                const selectedMethod = document.querySelector('input[name="importMethod"]:checked');
+                if (selectedMethod) {
+                    csvImportSection.style.display = selectedMethod.value === 'csv' ? 'block' : 'none';
+                    jsonImportSection.style.display = selectedMethod.value === 'json' ? 'block' : 'none';
+                }
+            }
+        }
+        
+        // 下载CSV模板
+        function downloadCSVTemplate() {
+            const csvContent = `产品名称,产品类目,品牌名称,30天GMV,30天销量,转化率%,退货率%,好评率%,平均售价,佣金率%,品类GPM,粉丝性别匹配,粉丝年龄匹配,城市匹配,兴趣匹配
+XX美白精华液,美妆护肤,XX品牌,250000,5000,3.2,8.2,95.5,199,20,800,9,8,7,9
+智能运动手环,数码家电,科技品牌,180000,3200,2.1,12.5,92.3,299,25,650,7,8,6,8
+有机坚果礼盒,食品饮料,健康食品,320000,8500,4.5,5.2,97.8,159,15,950,8,7,8,9`;
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '抖音罗盘数据导入模板.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // 下载JSON模板
+        function downloadJSONTemplate() {
+            const template = [
+                {
+                    "product_name": "XX美白精华液",
+                    "category": "美妆护肤",
+                    "brand": "XX品牌",
+                    "gmv_30d": 250000,
+                    "sales_30d": 5000,
+                    "order_conversion": 3.2,
+                    "return_rate": 8.2,
+                    "good_rate": 95.5,
+                    "avg_price": 199,
+                    "commission_rate": 20,
+                    "gpm": 800,
+                    "gender_match": 9,
+                    "age_match": 8,
+                    "city_match": 7,
+                    "interest_match": 9
+                },
+                {
+                    "product_name": "智能运动手环",
+                    "category": "数码家电",
+                    "brand": "科技品牌",
+                    "gmv_30d": 180000,
+                    "sales_30d": 3200,
+                    "order_conversion": 2.1,
+                    "return_rate": 12.5,
+                    "good_rate": 92.3,
+                    "avg_price": 299,
+                    "commission_rate": 25,
+                    "gpm": 650,
+                    "gender_match": 7,
+                    "age_match": 8,
+                    "city_match": 6,
+                    "interest_match": 8
+                }
+            ];
+            
+            const content = JSON.stringify(template, null, 2);
+            const blob = new Blob([content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '抖音罗盘数据导入模板.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // 预览导入数据
+        function previewImportData() {
+            const importMethod = document.querySelector('input[name="importMethod"]:checked').value;
+            
+            if (importMethod === 'csv') {
+                const fileInput = document.getElementById('csvFile');
+                if (!fileInput.files.length) {
+                    alert('请选择CSV文件');
+                    return;
+                }
+                previewCSVData(fileInput.files[0]);
+            } else if (importMethod === 'json') {
+                const jsonData = document.getElementById('jsonData').value;
+                if (!jsonData.trim()) {
+                    alert('请输入JSON数据');
+                    return;
+                }
+                previewJSONData(jsonData);
+            } else {
+                alert('请选择数据导入方式');
+            }
+        }
+        
+        // 预览CSV数据
+        function previewCSVData(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const csvData = e.target.result;
+                const parsedData = parseCSV(csvData);
+                displayPreviewData(parsedData);
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+        
+        // 解析CSV
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim() !== '');
+            if (lines.length === 0) return [];
+            
+            // 处理可能的引号和逗号在字段内的情况
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i];
+                let values = [];
+                let inQuotes = false;
+                let currentValue = '';
+                
+                for (let j = 0; j < line.length; j++) {
+                    const char = line[j];
+                    
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(currentValue.trim().replace(/"/g, ''));
+                        currentValue = '';
+                    } else {
+                        currentValue += char;
+                    }
+                }
+                
+                values.push(currentValue.trim().replace(/"/g, ''));
+                
+                const item = {};
+                headers.forEach((header, index) => {
+                    let value = values[index] || '';
+                    
+                    // 尝试转换为数字
+                    if (!isNaN(value) && value !== '') {
+                        // 检查是否包含百分号
+                        if (value.includes('%')) {
+                            item[header] = parseFloat(value.replace('%', ''));
+                        } else {
+                            item[header] = parseFloat(value);
+                        }
+                    } else {
+                        item[header] = value;
+                    }
+                });
+                
+                data.push(item);
+            }
+            
+            return data;
+        }
+        
+        // 预览JSON数据
+        function previewJSONData(jsonText) {
+            try {
+                const data = JSON.parse(jsonText);
+                // 如果data不是数组，包装成数组
+                const dataArray = Array.isArray(data) ? data : [data];
+                displayPreviewData(dataArray);
+            } catch (error) {
+                alert('JSON格式错误，请检查数据格式');
+                console.error('JSON解析错误:', error);
+            }
+        }
+        
+        // 显示预览数据
+        function displayPreviewData(data) {
+            if (!data || data.length === 0) {
+                alert('没有找到有效数据');
+                return;
+            }
+            
+            const previewBody = document.getElementById('importPreviewBody');
+            if (!previewBody) return;
+            
+            previewBody.innerHTML = '';
+            
+            data.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item['产品名称'] || item.product_name || item.productName || '未命名产品'}</td>
+                    <td>${item['产品类目'] || item.category || item.productCategory || '未分类'}</td>
+                    <td>${formatCurrency(item['30天GMV'] || item.gmv_30d || item.gmv || 0)}</td>
+                    <td>${(item['30天销量'] || item.sales_30d || item.sales || 0).toLocaleString()}</td>
+                    <td>${((item['转化率%'] || item.order_conversion || item.conversion || 0)).toFixed(1)}%</td>
+                    <td>${((item['好评率'] || item.good_rate || item.goodRate || 0)).toFixed(1)}%</td>
+                    <td>
+                        <button class="preview-btn" onclick="scoreSingleItem(${index})">
+                            评分
+                        </button>
+                    </td>
+                `;
+                previewBody.appendChild(row);
+            });
+            
+            // 显示预览和导入按钮
+            const dataPreview = document.getElementById('dataPreview');
+            const importDataBtn = document.getElementById('importDataBtn');
+            const clearImportBtn = document.getElementById('clearImportBtn');
+            
+            if (dataPreview) dataPreview.style.display = 'block';
+            if (importDataBtn) importDataBtn.style.display = 'inline-block';
+            if (clearImportBtn) clearImportBtn.style.display = 'inline-block';
+            
+            // 存储当前预览数据
+            window.currentPreviewData = data;
+        }
+        
+        // 清空导入数据
+        function clearImportData() {
+            const csvFile = document.getElementById('csvFile');
+            const jsonData = document.getElementById('jsonData');
+            const dataPreview = document.getElementById('dataPreview');
+            const importDataBtn = document.getElementById('importDataBtn');
+            const clearImportBtn = document.getElementById('clearImportBtn');
+            const importResults = document.getElementById('importResults');
+            
+            if (csvFile) csvFile.value = '';
+            if (jsonData) jsonData.value = '';
+            if (dataPreview) dataPreview.style.display = 'none';
+            if (importDataBtn) importDataBtn.style.display = 'none';
+            if (clearImportBtn) clearImportBtn.style.display = 'none';
+            if (importResults) importResults.style.display = 'none';
+            
+            window.currentPreviewData = null;
+            window.currentScoredData = null;
+        }
+        
+        // 导入并评分数据
+        function importAndScoreData() {
+            if (!window.currentPreviewData || window.currentPreviewData.length === 0) {
+                alert('没有可导入的数据');
+                return;
+            }
+            
+            // 显示加载提示
+            const importDataBtn = document.getElementById('importDataBtn');
+            if (importDataBtn) {
+                const originalText = importDataBtn.innerHTML;
+                importDataBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 评分中...';
+                importDataBtn.disabled = true;
+            }
+            
+            // 异步处理，避免界面卡顿
+            setTimeout(() => {
+                try {
+                    const scoredData = window.currentPreviewData.map((item, index) => {
+                        // 转换抖音罗盘数据为系统格式并评分
+                        const convertedData = convertDouyinData(item);
+                        const scoreResult = scoreImportedData(convertedData);
+                        
+                        return {
+                            originalData: item,
+                            convertedData: convertedData,
+                            scoreResult: scoreResult
+                        };
+                    });
+                    
+                    // 显示导入结果
+                    displayImportResults(scoredData);
+                    
+                    // 存储评分结果
+                    window.currentScoredData = scoredData;
+                } catch (error) {
+                    console.error('评分过程中出错:', error);
+                    alert('评分过程中出错: ' + error.message);
+                } finally {
+                    // 恢复按钮状态
+                    if (importDataBtn) {
+                        importDataBtn.innerHTML = '<i class="fas fa-bolt"></i> 一键智能评分';
+                        importDataBtn.disabled = false;
+                    }
+                }
+            }, 100);
+        }
+        
+        // 转换抖音罗盘数据为系统格式
+        function convertDouyinData(douyinData) {
+            // 提取基础字段
+            const productName = douyinData['产品名称'] || douyinData.product_name || douyinData.productName || '未命名产品';
+            const productCategory = douyinData['产品类目'] || douyinData.category || douyinData.productCategory || '其他';
+            const brandName = douyinData['品牌名称'] || douyinData.brand || douyinData.brandName || '未知品牌';
+            
+            // 数值字段处理
+            const gmv = parseFloat(douyinData['30天GMV'] || douyinData.gmv_30d || douyinData.gmv || 0);
+            const sales = parseInt(douyinData['30天销量'] || douyinData.sales_30d || douyinData.sales || 0);
+            const conversion = parseFloat(douyinData['转化率%'] || douyinData.order_conversion || douyinData.conversion || 0);
+            const returnRate = parseFloat(douyinData['退货率%'] || douyinData.return_rate || douyinData.returnRate || 0);
+            const goodRate = parseFloat(douyinData['好评率'] || douyinData.good_rate || douyinData.goodRate || 95);
+            const avgPrice = parseFloat(douyinData['平均售价'] || douyinData.avg_price || douyinData.price || 0);
+            const commission = parseFloat(douyinData['佣金率%'] || douyinData.commission_rate || douyinData.commission || 20);
+            const gpm = parseFloat(douyinData['品类GPM'] || douyinData.gpm || 800);
+            
+            // 匹配度字段处理
+            const genderMatch = parseInt(douyinData['粉丝性别匹配'] || douyinData.gender_match || 8);
+            const ageMatch = parseInt(douyinData['粉丝年龄匹配'] || douyinData.age_match || 7);
+            const cityMatch = parseInt(douyinData['城市匹配'] || douyinData.city_match || 7);
+            const interestMatch = parseInt(douyinData['兴趣匹配'] || douyinData.interest_match || 8);
+            
+            return {
+                // 基础信息
+                productName: productName,
+                productCategory: productCategory,
+                brandName: brandName,
+                
+                // 市场分析
+                marketSize: estimateMarketSize(productCategory),
+                competitionLevel: estimateCompetitionLevel(productCategory),
+                marketGrowth: 15, // 默认15%
+                avgGPM: gpm,
+                
+                // 产品与供应链
+                monthlySales: sales,
+                goodRate: goodRate,
+                returnRate: returnRate,
+                repurchaseRate: estimateRepurchaseRate(productCategory),
+                suggestedPrice: avgPrice > 0 ? avgPrice : 199,
+                lowestPrice: estimateLowestPrice(avgPrice, productCategory),
+                visualEffect: estimateVisualEffect(productCategory),
+                
+                // 粉丝匹配度
+                genderMatch: Math.min(Math.max(genderMatch, 1), 10),
+                ageMatch: Math.min(Math.max(ageMatch, 1), 10),
+                cityMatch: Math.min(Math.max(cityMatch, 1), 10),
+                interestMatch: Math.min(Math.max(interestMatch, 1), 10),
+                historicalConversion: conversion,
+                
+                // 财务测算
+                commissionRate: (commission || 20) / 100,
+                slotFee: estimateSlotFee(gmv),
+                trafficCostRatio: estimateTrafficCostRatio(productCategory),
+                operatingCostRatio: 0.05, // 默认5%
+                estimatedGMV: gmv > 0 ? gmv : 100000,
+                
+                // 风险评估 (默认良好)
+                certification: '10',
+                riskLevel: '10',
+                reputation: '10'
+            };
+        }
+        
+        // 为导入数据评分
+        function scoreImportedData(convertedData) {
+            try {
+                // 使用现有的计算函数
+                const moduleScores = calculateModuleScores(convertedData);
+                const totalScore = calculateTotalScore(moduleScores);
+                const decisionResult = generateDecisionResult(totalScore, moduleScores, convertedData);
+                const profitEstimate = calculateProfitEstimate(convertedData);
+                const riskWarnings = generateRiskWarnings(convertedData, moduleScores);
+                
+                return {
+                    totalScore: totalScore,
+                    decisionResult: decisionResult,
+                    profitEstimate: profitEstimate,
+                    moduleScores: moduleScores,
+                    riskWarnings: riskWarnings,
+                    convertedData: convertedData
+                };
+            } catch (error) {
+                console.error('评分出错:', error, convertedData);
+                // 返回默认评分
+                return {
+                    totalScore: 60,
+                    decisionResult: {
+                        level: 'B级-可合作',
+                        badgeClass: 'badge-b',
+                        action: '数据转换过程中出现异常，建议手动检查'
+                    },
+                    profitEstimate: {
+                        netProfit: 0,
+                        roi: 0,
+                        estimatedOrders: 0
+                    },
+                    moduleScores: {
+                        market: 60,
+                        product: 60,
+                        fan: 60,
+                        finance: 60,
+                        content: 60,
+                        risk: 60
+                    },
+                    riskWarnings: [],
+                    convertedData: convertedData
+                };
+            }
+        }
+        
+        // 显示导入结果
+        function displayImportResults(scoredData) {
+            if (!scoredData || scoredData.length === 0) {
+                alert('没有评分结果');
+                return;
+            }
+            
+            const totalCount = scoredData.length;
+            const highScoreCount = scoredData.filter(item => item.scoreResult.totalScore >= 80).length;
+            const avgScore = scoredData.reduce((sum, item) => sum + item.scoreResult.totalScore, 0) / totalCount;
+            const totalProfit = scoredData.reduce((sum, item) => sum + item.scoreResult.profitEstimate.netProfit, 0);
+            
+            // 更新显示
+            const importedCount = document.getElementById('importedCount');
+            const importedHighScore = document.getElementById('importedHighScore');
+            const importedAvgScore = document.getElementById('importedAvgScore');
+            const importedTotalProfit = document.getElementById('importedTotalProfit');
+            const importResults = document.getElementById('importResults');
+            
+            if (importedCount) importedCount.textContent = totalCount;
+            if (importedHighScore) importedHighScore.textContent = highScoreCount;
+            if (importedAvgScore) importedAvgScore.textContent = avgScore.toFixed(1);
+            if (importedTotalProfit) importedTotalProfit.textContent = formatCurrency(totalProfit);
+            if (importResults) importResults.style.display = 'block';
+        }
+        
+        // 查看导入详情
+        function viewImportDetails() {
+            if (!window.currentScoredData || window.currentScoredData.length === 0) {
+                alert('没有可查看的评分数据');
+                return;
+            }
+            
+            // 创建详情模态框内容
+            const modalContent = document.createElement('div');
+            modalContent.innerHTML = `
+                <div style="max-height: 70vh; overflow-y: auto;">
+                    <h3 style="margin-bottom: 20px;">导入产品评分详情 (${window.currentScoredData.length}个产品)</h3>
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>产品名称</th>
+                                <th>品类</th>
+                                <th>综合得分</th>
+                                <th>决策等级</th>
+                                <th>预估利润</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${window.currentScoredData.map((item, index) => `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${item.originalData['产品名称'] || item.originalData.product_name || '未命名'}</td>
+                                    <td>${item.originalData['产品类目'] || item.originalData.category || '未分类'}</td>
+                                    <td style="color: ${getScoreColor(item.scoreResult.totalScore)}; font-weight: 600;">
+                                        ${item.scoreResult.totalScore.toFixed(1)}
+                                    </td>
+                                    <td>
+                                        <span class="${getBadgeClass(item.scoreResult.decisionResult.level)}" 
+                                              style="padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;">
+                                            ${item.scoreResult.decisionResult.level}
+                                        </span>
+                                    </td>
+                                    <td>${formatCurrency(item.scoreResult.profitEstimate.netProfit)}</td>
+                                    <td>
+                                        <button class="preview-btn" onclick="viewSingleScoreDetail(${index})">
+                                            查看
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            // 显示模态框
+            showCustomModal('导入评分详情', modalContent.innerHTML);
+        }
+        
+        // 查看单个评分详情
+        function viewSingleScoreDetail(index) {
+            if (!window.currentScoredData || !window.currentScoredData[index]) return;
+            
+            const item = window.currentScoredData[index];
+            const scoreResult = item.scoreResult;
+            
+            const modalContent = `
+                <div class="result-card" style="margin-bottom: 20px;">
+                    <div class="score-display">
+                        <div class="total-score">${scoreResult.totalScore.toFixed(1)}</div>
+                        <div class="score-label">综合得分 /100</div>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <div class="decision-badge ${scoreResult.decisionResult.badgeClass}">
+                            ${scoreResult.decisionResult.level}
+                        </div>
+                    </div>
+                    
+                    <div class="action-suggestion">
+                        <p>${scoreResult.decisionResult.action}</p>
+                    </div>
+                    
+                    <div class="profit-estimate">
+                        <div class="profit-item">
+                            <div class="profit-label">产品名称</div>
+                            <div class="profit-value">${item.originalData['产品名称'] || item.originalData.product_name || '未命名'}</div>
+                        </div>
+                        <div class="profit-item">
+                            <div class="profit-label">预估GMV</div>
+                            <div class="profit-value">${formatCurrency(scoreResult.convertedData.estimatedGMV)}</div>
+                        </div>
+                        <div class="profit-item">
+                            <div class="profit-label">预估利润</div>
+                            <div class="profit-value">${formatCurrency(scoreResult.profitEstimate.netProfit)}</div>
+                        </div>
+                        <div class="profit-item">
+                            <div class="profit-label">预估ROI</div>
+                            <div class="profit-value">${scoreResult.profitEstimate.roi.toFixed(2)}:1</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title"><i class="fas fa-star-half-alt"></i> 模块得分</h3>
+                    <div class="module-scores">
+                        ${Object.entries(scoreResult.moduleScores).map(([module, score]) => `
+                            <div class="module-score-item">
+                                <div class="module-name">${getModuleName(module)}</div>
+                                <div class="module-score" style="color: ${getScoreColor(score)}">
+                                    ${Math.round(score)}
+                                </div>
+                                <div style="font-size: 0.8rem; color: #888;">/100</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            showCustomModal('产品评分详情', modalContent);
+        }
+        
+        // 保存所有导入数据
+        function saveAllImportedData() {
+            if (!window.currentScoredData || window.currentScoredData.length === 0) {
+                alert('没有可保存的数据');
+                return;
+            }
+            
+            if (!confirm(`确定要将${window.currentScoredData.length}个产品的评分结果保存到历史记录吗？`)) {
+                return;
+            }
+            
+            let savedCount = 0;
+            window.currentScoredData.forEach(item => {
+                try {
+                    const historyItem = {
+                        id: generateId(),
+                        productName: item.originalData['产品名称'] || item.originalData.product_name || '未命名产品',
+                        productCategory: item.originalData['产品类目'] || item.originalData.category || '其他',
+                        brandName: item.originalData['品牌名称'] || item.originalData.brand || '未知品牌',
+                        evaluationDate: new Date().toISOString(),
+                        totalScore: item.scoreResult.totalScore,
+                        decisionLevel: item.scoreResult.decisionResult.level,
+                        estimatedProfit: item.scoreResult.profitEstimate.netProfit,
+                        estimatedGMV: item.scoreResult.convertedData.estimatedGMV,
+                        moduleScores: item.scoreResult.moduleScores,
+                        inputData: item.scoreResult.convertedData,
+                        profitEstimate: item.scoreResult.profitEstimate
+                    };
+                    
+                    historyData.unshift(historyItem);
+                    savedCount++;
+                } catch (error) {
+                    console.error('保存单个产品时出错:', error);
+                }
+            });
+            
+            saveHistoryData();
+            loadHistoryData();
+            
+            alert(`成功保存${savedCount}条记录到历史记录！`);
+            
+            // 清空导入数据
+            clearImportData();
+            
+            // 切换到历史记录标签
+            document.querySelector('[data-tab="history"]').click();
+        }
+        
+        // 为单个产品评分（预览中的按钮）
+        function scoreSingleItem(index) {
+            if (!window.currentPreviewData || !window.currentPreviewData[index]) return;
+            
+            const item = window.currentPreviewData[index];
+            const convertedData = convertDouyinData(item);
+            const scoreResult = scoreImportedData(convertedData);
+            
+            // 显示评分结果
+            const modalContent = `
+                <div class="result-card" style="margin-bottom: 20px;">
+                    <div class="score-display">
+                        <div class="total-score">${scoreResult.totalScore.toFixed(1)}</div>
+                        <div class="score-label">综合得分 /100</div>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <div class="decision-badge ${scoreResult.decisionResult.badgeClass}">
+                            ${scoreResult.decisionResult.level}
+                        </div>
+                    </div>
+                    
+                    <div class="action-suggestion">
+                        <p><strong>产品名称：</strong>${item['产品名称'] || item.product_name || '未命名'}</p>
+                        <p><strong>行动建议：</strong>${scoreResult.decisionResult.action}</p>
+                    </div>
+                    
+                    <div class="profit-estimate">
+                        <div class="profit-item">
+                            <div class="profit-label">预估GMV</div>
+                            <div class="profit-value">${formatCurrency(scoreResult.convertedData.estimatedGMV)}</div>
+                        </div>
+                        <div class="profit-item">
+                            <div class="profit-label">预估利润</div>
+                            <div class="profit-value">${formatCurrency(scoreResult.profitEstimate.netProfit)}</div>
+                        </div>
+                        <div class="profit-item">
+                            <div class="profit-label">预估ROI</div>
+                            <div class="profit-value">${scoreResult.profitEstimate.roi.toFixed(2)}:1</div>
+                        </div>
+                        <div class="profit-item">
+                            <div class="profit-label">预估订单</div>
+                            <div class="profit-value">${scoreResult.profitEstimate.estimatedOrders}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn" onclick="saveSingleImportedItem(${index})">
+                        <i class="fas fa-save"></i> 保存到历史记录
+                    </button>
+                </div>
+            `;
+            
+            showCustomModal('单产品评分结果', modalContent);
+        }
+        
+        // 保存单个导入的产品
+        function saveSingleImportedItem(index) {
+            if (!window.currentPreviewData || !window.currentPreviewData[index]) return;
+            
+            const item = window.currentPreviewData[index];
+            const convertedData = convertDouyinData(item);
+            const scoreResult = scoreImportedData(convertedData);
+            
+            const historyItem = {
+                id: generateId(),
+                productName: item['产品名称'] || item.product_name || '未命名产品',
+                productCategory: item['产品类目'] || item.category || '其他',
+                brandName: item['品牌名称'] || item.brand || '未知品牌',
+                evaluationDate: new Date().toISOString(),
+                totalScore: scoreResult.totalScore,
+                decisionLevel: scoreResult.decisionResult.level,
+                estimatedProfit: scoreResult.profitEstimate.netProfit,
+                estimatedGMV: scoreResult.convertedData.estimatedGMV,
+                moduleScores: scoreResult.moduleScores,
+                inputData: scoreResult.convertedData,
+                profitEstimate: scoreResult.profitEstimate
+            };
+            
+            historyData.unshift(historyItem);
+            saveHistoryData();
+            loadHistoryData();
+            
+            alert('产品评分已保存到历史记录！');
+            
+            // 关闭模态框
+            const modal = document.querySelector('.modal.active');
+            if (modal) modal.remove();
+        }
+        
+        // 显示自定义模态框
+        function showCustomModal(title, content) {
+            // 创建模态框
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <h3 class="modal-title">${title}</h3>
+                        <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        ${content}
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">关闭</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        // ==============================
+        // 数据估算函数
+        // ==============================
+        
+        // 数据估算函数（基于抖音罗盘数据的智能估算）
+        function estimateMarketSize(category) {
+            const categoryMap = {
+                '美妆护肤': 8,
+                '服装鞋包': 10,
+                '食品饮料': 8,
+                '家居日用': 6,
+                '数码家电': 7,
+                '母婴儿童': 6,
+                '其他': 4
+            };
+            return categoryMap[category] || 4;
+        }
+        
+        function estimateCompetitionLevel(category) {
+            const competitionMap = {
+                '美妆护肤': 4,
+                '服装鞋包': 2,
+                '食品饮料': 7,
+                '家居日用': 7,
+                '数码家电': 4,
+                '母婴儿童': 8,
+                '其他': 6
+            };
+            return competitionMap[category] || 5;
+        }
+        
+        function estimateRepurchaseRate(category) {
+            const repurchaseMap = {
+                '美妆护肤': 35,
+                '服装鞋包': 25,
+                '食品饮料': 45,
+                '家居日用': 20,
+                '数码家电': 15,
+                '母婴儿童': 40,
+                '其他': 15
+            };
+            return repurchaseMap[category] || 20;
+        }
+        
+        function estimateLowestPrice(avgPrice, category) {
+            // 根据品类估算最低价（比平均价低5-15%）
+            const discountMap = {
+                '美妆护肤': 0.85,
+                '服装鞋包': 0.75,
+                '食品饮料': 0.90,
+                '家居日用': 0.80,
+                '数码家电': 0.88,
+                '母婴儿童': 0.85,
+                '其他': 0.80
+            };
+            const discount = discountMap[category] || 0.85;
+            const price = avgPrice > 0 ? avgPrice : 199;
+            return Math.round(price * discount);
+        }
+        
+        function estimateVisualEffect(category) {
+            const visualMap = {
+                '美妆护肤': 9,
+                '服装鞋包': 8,
+                '食品饮料': 7,
+                '家居日用': 6,
+                '数码家电': 8,
+                '母婴儿童': 7,
+                '其他': 5
+            };
+            return visualMap[category] || 6;
+        }
+        
+        function estimateSlotFee(gmv) {
+            if (gmv >= 500000) return 20000;
+            if (gmv >= 200000) return 10000;
+            if (gmv >= 100000) return 5000;
+            return 2000;
+        }
+        
+        function estimateTrafficCostRatio(category) {
+            const trafficMap = {
+                '美妆护肤': 0.15,
+                '服装鞋包': 0.12,
+                '食品饮料': 0.10,
+                '家居日用': 0.08,
+                '数码家电': 0.18,
+                '母婴儿童': 0.13,
+                '其他': 0.10
+            };
+            return trafficMap[category] || 0.12;
+        }
+    </script>
+</body>
+</html>
